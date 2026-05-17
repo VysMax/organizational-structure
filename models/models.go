@@ -3,10 +3,10 @@ package models
 import "time"
 
 type Department struct {
-	Id        int
-	Name      string
-	ParentID  int
-	CreatedAt time.Time
+	Id        int       `json:"id,omitempty" gorm:"primaryKey;autoIncrement"`
+	Name      string    `json:"name" gorm:"size:200;not null"`
+	ParentID  *int      `json:"parent_id,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 type Employee struct {

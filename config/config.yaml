@@ -1,5 +1,5 @@
 server:
-  host: "localhost"
+  host: "0.0.0.0"
   port: "8080"
   shutdown_timeout: 30s
   read_timeout: 5s
@@ -9,9 +9,9 @@ server:
 database:
   host: "postgres"
   port: 5432
-  database: "postgres"
+  db_name: "org_str"
   user: "postgres"
-  password: "postgres"
+  password: "password"
   ssl_mode: "disable"
   pool_max_conns: 4
   pool_min_conns: 0
@@ -22,4 +22,4 @@ database:
 
 logger:
   level: "debug"
-  file: "logs/logs.log"
+  file: ""

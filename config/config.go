@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -28,7 +29,7 @@ type Database struct {
 	Port     string `mapstructure:"port"`
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
-	Database string `mapstructure:"database"`
+	DBName   string `mapstructure:"db_name"`
 	SSLMode  string `mapstructure:"ssl_mode"`
 
 	PoolMaxConns              int           `mapstructure:"pool_max_conns"`
@@ -55,6 +56,9 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
 	var cfg Config
 
 	if err := v.Unmarshal(&cfg); err != nil {
@@ -62,4 +66,11 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &cfg, nil
+}
+
+func (c *Config) GetDSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.DBName, c.Database.SSLMode,
+	)
 }

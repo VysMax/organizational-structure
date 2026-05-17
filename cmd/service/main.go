@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -12,7 +11,11 @@ import (
 	"time"
 
 	"github.com/VysMax/organizational-structure/config"
+	"github.com/VysMax/organizational-structure/controller"
+	"github.com/VysMax/organizational-structure/database"
 	"github.com/VysMax/organizational-structure/logger"
+	"github.com/VysMax/organizational-structure/repository"
+	"github.com/VysMax/organizational-structure/usecase"
 )
 
 func main() {
@@ -21,7 +24,6 @@ func main() {
 		log.Println("Error loading config:", err)
 		return
 	}
-	fmt.Println(cfg.File)
 
 	logger, err := logger.Init(cfg)
 	if err != nil {
@@ -30,7 +32,16 @@ func main() {
 
 	logger.Info("logger initiated")
 
-	fmt.Println("Hello")
+	dbConn, err := database.New(cfg, logger)
+	if err != nil {
+		logger.Error("Failed to connect to database", "error", err)
+	}
+
+	repo := repository.New(dbConn.DB, logger)
+	usecase := usecase.New(repo, logger)
+	handler := controller.New(usecase, logger)
+
+	http.HandleFunc("/departments", handler.CreateDepartment)
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, cfg.Server.Port),
