@@ -10,6 +10,8 @@ import (
 	"github.com/VysMax/organizational-structure/models"
 )
 
+var ErrNoDept = errors.New("department not found")
+
 type OrganizationRepository interface {
 	CreateDepartment(department *models.Department) error
 	CreateEmployee(employee *models.Employee) error
@@ -50,7 +52,7 @@ func (uc *Usecase) CreateDepartment(department *models.Department) error {
 			return fmt.Errorf("failed to check parent ID existence: %w", err)
 		}
 		if !exists {
-			return errors.New("specified parent ID does not exist")
+			return ErrNoDept
 		}
 	}
 
@@ -92,7 +94,7 @@ func (uc *Usecase) CreateEmployee(employee *models.Employee) error {
 		return fmt.Errorf("failed to check department ID existence: %w", err)
 	}
 	if !exists {
-		return errors.New("specified department ID does not exist")
+		return ErrNoDept
 	}
 
 	if err := uc.repo.CreateEmployee(employee); err != nil {
@@ -127,7 +129,7 @@ func (uc *Usecase) UpdateParent(department *models.Department) error {
 			return fmt.Errorf("failed to check parent ID existence: %w", err)
 		}
 		if !exists {
-			return errors.New("specified parent ID does not exist")
+			return ErrNoDept
 		}
 	}
 
@@ -158,7 +160,7 @@ func (uc *Usecase) DeleteDepartment(params *models.RequestDelete) error {
 		}
 		if !exists {
 			uc.log.Error("Validation failed", "error", "no department to reassign employees to")
-			return errors.New("specified parent ID does not exist")
+			return ErrNoDept
 		}
 
 	default:

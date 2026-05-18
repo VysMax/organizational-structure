@@ -16,7 +16,7 @@ type Employee struct {
 	DepartmentId int        `json:"departament_id"`
 	FullName     string     `json:"full_name" gorm:"size:200;not null"`
 	Position     string     `json:"position" gorm:"size:200;not null"`
-	HiredAt      *time.Time `json:"hired_at" gorm:"type:date"`
+	HiredAt      *time.Time `json:"hired_at,omitempty" gorm:"type:date"`
 	CreatedAt    time.Time  `json:"created_at"`
 }
 

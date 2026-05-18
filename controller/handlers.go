@@ -92,6 +92,10 @@ func (h *Handler) CreateEmployee(w http.ResponseWriter, r *http.Request) {
 
 	if err = h.usecase.CreateEmployee(employee); err != nil {
 		h.log.Error("Failed to create employee", "error", err)
+		if err == usecase.ErrNoDept {
+			http.Error(w, "Failed to create employee: department not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, "Failed to create employee", http.StatusInternalServerError)
 		return
 	}
@@ -147,6 +151,13 @@ func (h *Handler) ExistingDepartments(w http.ResponseWriter, r *http.Request) {
 		department.Id = id
 
 		if err = h.usecase.UpdateParent(department); err != nil {
+			h.log.Error("Failed to update parent", "error", err)
+
+			if err == usecase.ErrNoDept {
+				http.Error(w, "Failed to update parent: target department not found", http.StatusNotFound)
+				return
+			}
+
 			if strings.Contains(err.Error(), "cannot make department subtree of its subtree") {
 				http.Error(w, err.Error(), http.StatusConflict)
 				return
@@ -171,6 +182,12 @@ func (h *Handler) ExistingDepartments(w http.ResponseWriter, r *http.Request) {
 		req.Id = id
 
 		if err := h.usecase.DeleteDepartment(&req); err != nil {
+
+			if err == usecase.ErrNoDept {
+				http.Error(w, "Failed to reassign department: new department for employees not found", http.StatusNotFound)
+				return
+			}
+
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

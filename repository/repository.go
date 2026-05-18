@@ -22,11 +22,15 @@ func New(db *gorm.DB, log *slog.Logger) *Repo {
 }
 
 func (r *Repo) CheckExistence(parentID int) (bool, error) {
-	err := r.db.Model(&models.Department{}).Where("id = ?", parentID).Error
+	var department models.Department
+	err := r.db.First(&department, "id = ?", parentID).Error
+
+	r.log.Debug("Check result", "error", err)
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Info("ParentID not found")
-			return false, err
+			return false, nil
 		}
 		r.log.Error("failed to check parentID existence:", "error", err)
 		return false, err
