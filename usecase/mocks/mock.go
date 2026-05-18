@@ -62,3 +62,32 @@ func (mr *MockOrganizationRepositoryMockRecorder) CreateDepartment(department in
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDepartment", reflect.TypeOf((*MockOrganizationRepository)(nil).CreateDepartment), department)
 }
+
+// CreateEmployee mocks base method.
+func (m *MockOrganizationRepository) CreateEmployee(employee *models.Employee) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateEmployee", employee)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateEmployee indicates an expected call of CreateEmployee.
+func (mr *MockOrganizationRepositoryMockRecorder) CreateEmployee(employee interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployee", reflect.TypeOf((*MockOrganizationRepository)(nil).CreateEmployee), employee)
+}
+
+// GetTree mocks base method.
+func (m *MockOrganizationRepository) GetTree(params *models.RequestTree) (*models.Department, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTree", params)
+	ret0, _ := ret[0].(*models.Department)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTree indicates an expected call of GetTree.
+func (mr *MockOrganizationRepositoryMockRecorder) GetTree(params interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTree", reflect.TypeOf((*MockOrganizationRepository)(nil).GetTree), params)
+}

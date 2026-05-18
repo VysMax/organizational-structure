@@ -42,6 +42,8 @@ func main() {
 	handler := controller.New(usecase, logger)
 
 	http.HandleFunc("/departments", handler.CreateDepartment)
+	http.HandleFunc("/departments/{id}/employees/", handler.CreateEmployee)
+	http.HandleFunc("/departments/{id}", handler.ExistingDepartments)
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort(cfg.Server.Host, cfg.Server.Port),

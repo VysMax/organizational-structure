@@ -1,5 +1,5 @@
 server:
-  host: "0.0.0.0"
+  host: "localhost"
   port: "8080"
   shutdown_timeout: 30s
   read_timeout: 5s
@@ -7,7 +7,7 @@ server:
   idle_timeout: 120s
 
 database:
-  host: "postgres"
+  host: "localhost"
   port: 5432
   db_name: "org_str"
   user: "postgres"
@@ -22,4 +22,4 @@ database:
 
 logger:
   level: "debug"
-  file: ""
+  file: "logs/logs.log"
