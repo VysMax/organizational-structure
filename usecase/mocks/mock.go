@@ -77,6 +77,20 @@ func (mr *MockOrganizationRepositoryMockRecorder) CreateEmployee(employee interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmployee", reflect.TypeOf((*MockOrganizationRepository)(nil).CreateEmployee), employee)
 }
 
+// DeleteDepartment mocks base method.
+func (m *MockOrganizationRepository) DeleteDepartment(params *models.RequestDelete) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDepartment", params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDepartment indicates an expected call of DeleteDepartment.
+func (mr *MockOrganizationRepositoryMockRecorder) DeleteDepartment(params interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDepartment", reflect.TypeOf((*MockOrganizationRepository)(nil).DeleteDepartment), params)
+}
+
 // GetTree mocks base method.
 func (m *MockOrganizationRepository) GetTree(params *models.RequestTree) (*models.Department, error) {
 	m.ctrl.T.Helper()
@@ -90,4 +104,18 @@ func (m *MockOrganizationRepository) GetTree(params *models.RequestTree) (*model
 func (mr *MockOrganizationRepositoryMockRecorder) GetTree(params interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTree", reflect.TypeOf((*MockOrganizationRepository)(nil).GetTree), params)
+}
+
+// UpdateParent mocks base method.
+func (m *MockOrganizationRepository) UpdateParent(department *models.Department) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateParent", department)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateParent indicates an expected call of UpdateParent.
+func (mr *MockOrganizationRepositoryMockRecorder) UpdateParent(department interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateParent", reflect.TypeOf((*MockOrganizationRepository)(nil).UpdateParent), department)
 }

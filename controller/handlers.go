@@ -102,17 +102,18 @@ func (h *Handler) CreateEmployee(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ExistingDepartments(w http.ResponseWriter, r *http.Request) {
+
+	idParam := path.Base(r.URL.Path)
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		h.log.Error("Invalid department ID", "error", err)
+		http.Error(w, "Invalid department ID", http.StatusBadRequest)
+		return
+	}
+	h.log.Debug("from URL", "id", id)
+
 	switch r.Method {
 	case http.MethodGet:
-
-		idParam := path.Base(r.URL.Path)
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			h.log.Error("Invalid department ID", "error", err)
-			http.Error(w, "Invalid department ID", http.StatusBadRequest)
-			return
-		}
-		h.log.Info("from URL", "id", id)
 
 		var req models.RequestTree
 
@@ -133,6 +134,49 @@ func (h *Handler) ExistingDepartments(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(department)
+
+	case http.MethodPatch:
+
+		var department *models.Department
+		if err := json.NewDecoder(r.Body).Decode(&department); err != nil {
+			h.log.Error("Failed to deserialize body", "error", err)
+			http.Error(w, "Failed to deserialize body", http.StatusBadRequest)
+			return
+		}
+
+		department.Id = id
+
+		if err = h.usecase.UpdateParent(department); err != nil {
+			if strings.Contains(err.Error(), "cannot make department subtree of its subtree") {
+				http.Error(w, err.Error(), http.StatusConflict)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(department)
+
+	case http.MethodDelete:
+
+		var req models.RequestDelete
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			h.log.Error("Failed to deserialize body", "error", err)
+			http.Error(w, "Failed to deserialize body", http.StatusBadRequest)
+			return
+		}
+
+		req.Id = id
+
+		if err := h.usecase.DeleteDepartment(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

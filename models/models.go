@@ -37,3 +37,9 @@ type RequestEmployee struct {
 	Position string `json:"position"`
 	HiredAt  string `json:"hired_at"`
 }
+
+type RequestDelete struct {
+	Id                     int    `json:"id,omitempty"`
+	Mode                   string `json:"mode"`
+	ReassignToDepartmentID int    `json:"reassign_to_department_id"`
+}

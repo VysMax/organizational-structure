@@ -14,6 +14,8 @@ type OrganizationRepository interface {
 	CreateDepartment(department *models.Department) error
 	CreateEmployee(employee *models.Employee) error
 	GetTree(params *models.RequestTree) (*models.Department, error)
+	UpdateParent(department *models.Department) error
+	DeleteDepartment(params *models.RequestDelete) error
 	CheckExistence(parentID int) (bool, error)
 }
 
@@ -115,4 +117,59 @@ func (uc *Usecase) GetTree(params *models.RequestTree) (*models.Department, erro
 	}
 
 	return tree, nil
+}
+
+func (uc *Usecase) UpdateParent(department *models.Department) error {
+
+	if department.ParentID != nil {
+		exists, err := uc.repo.CheckExistence(*department.ParentID)
+		if err != nil {
+			return fmt.Errorf("failed to check parent ID existence: %w", err)
+		}
+		if !exists {
+			return errors.New("specified parent ID does not exist")
+		}
+	}
+
+	uc.log.Info("Validation successful")
+
+	if err := uc.repo.UpdateParent(department); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uc *Usecase) DeleteDepartment(params *models.RequestDelete) error {
+
+	switch params.Mode {
+	case "cascade":
+
+	case "reassign":
+
+		if params.ReassignToDepartmentID == 0 {
+			uc.log.Error("Validation failed", "error", "no department to reassign employees to")
+			return errors.New("no department to reassign employees to")
+		}
+
+		exists, err := uc.repo.CheckExistence(params.ReassignToDepartmentID)
+		if err != nil {
+			return fmt.Errorf("failed to check parent ID existence: %w", err)
+		}
+		if !exists {
+			uc.log.Error("Validation failed", "error", "no department to reassign employees to")
+			return errors.New("specified parent ID does not exist")
+		}
+
+	default:
+		return errors.New("unknown delete mode")
+	}
+
+	uc.log.Info("Validation successful")
+
+	if err := uc.repo.DeleteDepartment(params); err != nil {
+		return err
+	}
+
+	return nil
 }

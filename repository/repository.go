@@ -6,6 +6,7 @@ import (
 
 	"github.com/VysMax/organizational-structure/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repo struct {
@@ -100,9 +101,93 @@ func (r *Repo) GetTree(params *models.RequestTree) (*models.Department, error) {
 		subtree, err := r.GetTree(params)
 		if err != nil {
 			r.log.Error("Failed to get subtree", "depth", params.Depth, "error", err)
+			return nil, err
 		}
 		tree.Children = append(tree.Children, *subtree)
 	}
 
 	return &tree, nil
+}
+
+func (r *Repo) UpdateParent(department *models.Department) error {
+
+	var result *gorm.DB
+
+	switch department.Name {
+	case "":
+		result = r.db.Model(&models.Department{}).
+			Where("id = ?", department.Id).
+			Update("parent_id", department.ParentID).Scan(&department)
+
+	default:
+		result = r.db.Model(&models.Department{}).
+			Where("id = ?", department.Id).
+			Clauses(clause.Returning{}).
+			Update("name", department.Name).
+			Update("parent_id", department.ParentID).Scan(&department)
+	}
+
+	r.log.Debug("model", "department", department)
+
+	if err := result.Error; err != nil {
+		r.log.Error("Failed to update parent", "error", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repo) DeleteDepartment(params *models.RequestDelete) error {
+
+	var err error
+
+	switch params.Mode {
+	case "cascade":
+		err = r.db.Delete(&models.Department{}, params.Id).Error
+	case "reassign":
+		tx := r.db.Begin()
+
+		if tx.Error != nil {
+			r.log.Error("Failed to begin transaction", "error", err)
+			return tx.Error
+		}
+
+		if err = tx.Model(&models.Employee{}).
+			Where("department_id = ?", params.Id).
+			Update("department_id", params.ReassignToDepartmentID).Error; err != nil {
+			tx.Rollback()
+			r.log.Error("Failed to change employees' department", "error", err)
+			return err
+		}
+
+		var eliminatedDept models.Department
+		if err := tx.First(&eliminatedDept, params.Id).Error; err != nil {
+			tx.Rollback()
+			r.log.Error("Failed to get eliminated department parent ID", "error", err)
+			return err
+		}
+
+		r.log.Debug("Got", "parentID", eliminatedDept.ParentID)
+
+		if err = tx.Model(&models.Department{}).
+			Where("parent_id = ?", params.Id).
+			Update("parent_id", eliminatedDept.ParentID).Error; err != nil {
+			tx.Rollback()
+			r.log.Error("Failed to change employees' department", "error", err)
+			return err
+		}
+
+		if err = tx.Delete(&models.Department{}, params.Id).Error; err != nil {
+			tx.Rollback()
+			r.log.Error("Failed to delete department", "error", err)
+			return err
+		}
+
+		if err = tx.Commit().Error; err != nil {
+			r.log.Error("Failed to commit transaction", "error", err)
+			return err
+		}
+	}
+
+	return nil
 }
